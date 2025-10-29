@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
 import '../services/battery_service.dart';
 import '../widgets/circular_meter.dart';
 import '../widgets/info_panel.dart';
@@ -108,6 +107,16 @@ class _HomeScreenState extends State<HomeScreen>
     }
   }
   
+  String _getChargingMode() {
+    if (!_batteryService.isCharging) return 'N/A';
+    
+    final watts = _batteryService.estimatedWatts;
+    if (watts > 15) return 'Rápido';
+    if (watts > 10) return 'Normal';
+    if (watts > 5) return 'Lento';
+    return 'Mínimo';
+  }
+  
   @override
   void dispose() {
     _pulseController.dispose();
@@ -137,10 +146,14 @@ class _HomeScreenState extends State<HomeScreen>
                   
                   // Medidor circular principal
                   CircularMeter(
-                    batteryLevel: _batteryService.batteryLevel,
-                    estimatedWatts: _batteryService.estimatedWatts,
-                    isCharging: _batteryService.isCharging,
-                    animation: _rotationAnimation,
+                    value: _batteryService.estimatedWatts,
+                    maxValue: 20.0,
+                    unit: 'W',
+                    label: 'Potencia',
+                    color: _batteryService.isCharging 
+                        ? AppTheme.secondaryGreen 
+                        : AppTheme.textSecondary,
+                    size: 200.0,
                   ),
                   
                   const SizedBox(height: 30),
@@ -155,7 +168,10 @@ class _HomeScreenState extends State<HomeScreen>
                             : 1.0,
                         child: ChargingStatus(
                           isCharging: _batteryService.isCharging,
-                          batteryState: _batteryService.batteryState,
+                          currentPower: _batteryService.estimatedWatts,
+                          batteryLevel: _batteryService.batteryLevel,
+                          timeToFull: _batteryService.estimateTimeToFull(),
+                          chargingMode: _getChargingMode(),
                         ),
                       );
                     },
@@ -166,10 +182,13 @@ class _HomeScreenState extends State<HomeScreen>
                   // Panel de información
                   InfoPanel(
                     batteryLevel: _batteryService.batteryLevel,
-                    estimatedVoltage: _batteryService.estimatedVoltage,
-                    estimatedCurrent: _batteryService.estimatedCurrent,
-                    estimatedTemperature: _batteryService.estimatedTemperature,
+                    isCharging: _batteryService.isCharging,
+                    estimatedWatts: _batteryService.estimatedWatts,
+                    temperature: _batteryService.estimatedTemperature,
                     efficiency: _batteryService.efficiency,
+                    chargingTrend: _batteryService.getChargingTrend(),
+                    timeToFull: _batteryService.estimateTimeToFull(),
+                    averagePower: _batteryService.getAverageChargingPower(),
                   ),
                   
                   const SizedBox(height: 30),

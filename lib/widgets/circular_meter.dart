@@ -144,29 +144,6 @@ class _CircularMeterState extends State<CircularMeter>
                 ),
             ],
           ),
-          
-          // Indicadores de escala
-          ...List.generate(8, (index) {
-            final angle = (index * 45) * pi / 180;
-            final isMainIndicator = index % 2 == 0;
-            
-            return Positioned(
-              top: widget.size / 2 - 
-                  cos(angle - pi / 2) * (widget.size / 2 - 20) - 
-                  (isMainIndicator ? 4 : 2),
-              left: widget.size / 2 + 
-                   sin(angle - pi / 2) * (widget.size / 2 - 20) - 
-                   (isMainIndicator ? 4 : 2),
-              child: Container(
-                width: isMainIndicator ? 8 : 4,
-                height: isMainIndicator ? 8 : 4,
-                decoration: BoxDecoration(
-                  color: Colors.grey[400],
-                  shape: BoxShape.circle,
-                ),
-              ),
-            );
-          }),
         ],
       ),
     );
@@ -202,25 +179,14 @@ class CircularMeterPainter extends CustomPainter {
     final progressPaint = Paint()
       ..strokeWidth = strokeWidth
       ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round;
-    
-    // Gradiente para el progreso
-    final gradient = SweepGradient(
-      startAngle: -pi / 2,
-      endAngle: -pi / 2 + (2 * pi * progress),
-      colors: [
-        color.withOpacity(0.3),
-        color,
-        color.withOpacity(0.8),
-      ],
-    );
-    
-    final rect = Rect.fromCircle(center: center, radius: radius);
-    progressPaint.shader = gradient.createShader(rect);
+      ..strokeCap = StrokeCap.round
+      ..color = color;
     
     // Dibujar arco de progreso
     const startAngle = -pi / 2;
-    final sweepAngle = 2 * pi * progress;
+    final sweepAngle = 2 * pi * progress.clamp(0.0, 1.0);
+    
+    final rect = Rect.fromCircle(center: center, radius: radius);
     
     canvas.drawArc(
       rect,

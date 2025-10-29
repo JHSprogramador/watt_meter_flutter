@@ -23,9 +23,7 @@ class ChargingStatus extends StatefulWidget {
 class _ChargingStatusState extends State<ChargingStatus>
     with TickerProviderStateMixin {
   late AnimationController _pulseController;
-  late AnimationController _sparkController;
   late Animation<double> _pulseAnimation;
-  late Animation<double> _sparkAnimation;
   
   @override
   void initState() {
@@ -36,25 +34,12 @@ class _ChargingStatusState extends State<ChargingStatus>
       vsync: this,
     );
     
-    _sparkController = AnimationController(
-      duration: Duration(milliseconds: 1500),
-      vsync: this,
-    );
-    
     _pulseAnimation = Tween<double>(
       begin: 0.8,
       end: 1.2,
     ).animate(CurvedAnimation(
       parent: _pulseController,
       curve: Curves.easeInOut,
-    ));
-    
-    _sparkAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _sparkController,
-      curve: Curves.easeOutCubic,
     ));
     
     if (widget.isCharging) {
@@ -75,18 +60,15 @@ class _ChargingStatusState extends State<ChargingStatus>
   
   void _startAnimations() {
     _pulseController.repeat(reverse: true);
-    _sparkController.repeat();
   }
   
   void _stopAnimations() {
     _pulseController.stop();
-    _sparkController.stop();
   }
   
   @override
   void dispose() {
     _pulseController.dispose();
-    _sparkController.dispose();
     super.dispose();
   }
 
@@ -117,67 +99,25 @@ class _ChargingStatusState extends State<ChargingStatus>
         child: Column(
           children: [
             // Icono principal animado
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                if (widget.isCharging) ...[
-                  AnimatedBuilder(
-                    animation: _pulseAnimation,
-                    builder: (context, child) {
-                      return Transform.scale(
-                        scale: _pulseAnimation.value,
-                        child: Container(
-                          padding: EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            Icons.flash_on,
-                            size: 40,
-                            color: Colors.white,
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                  SizedBox(width: 16),
-                  // Chispas animadas
-                  AnimatedBuilder(
-                    animation: _sparkAnimation,
-                    builder: (context, child) {
-                      return Stack(
-                        children: List.generate(3, (index) {
-                          final offset = _sparkAnimation.value * (index + 1) * 10;
-                          return Positioned(
-                            left: offset,
-                            child: Opacity(
-                              opacity: 1.0 - _sparkAnimation.value,
-                              child: Icon(
-                                Icons.star,
-                                size: 12 + index * 4,
-                                color: Colors.yellow[300],
-                              ),
-                            ),
-                          );
-                        }),
-                      );
-                    },
-                  ),
-                ] else
-                  Container(
+            AnimatedBuilder(
+              animation: _pulseAnimation,
+              builder: (context, child) {
+                return Transform.scale(
+                  scale: widget.isCharging ? _pulseAnimation.value : 1.0,
+                  child: Container(
                     padding: EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       color: Colors.white.withOpacity(0.2),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
-                      Icons.power,
+                      widget.isCharging ? Icons.flash_on : Icons.power,
                       size: 40,
                       color: Colors.white,
                     ),
                   ),
-              ],
+                );
+              },
             ),
             
             SizedBox(height: 16),
@@ -329,7 +269,7 @@ class _ChargingStatusState extends State<ChargingStatus>
         ),
         Text(
           label,
-          style: Theme.of(context).textTheme.caption?.copyWith(
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
             color: Colors.white.withOpacity(0.7),
             fontSize: 10,
           ),
@@ -362,112 +302,5 @@ class _ChargingStatusState extends State<ChargingStatus>
     } else {
       return '<1min';
     }
-  }
-}
-
-// Widget adicional para mostrar velocidad de carga
-class ChargingSpeedIndicator extends StatelessWidget {
-  final double currentPower;
-  final double maxPower;
-  
-  const ChargingSpeedIndicator({
-    Key? key,
-    required this.currentPower,
-    this.maxPower = 20.0,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    final speedRatio = currentPower / maxPower;
-    
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      padding: EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey[200]!),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Velocidad de carga',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              Text(
-                _getSpeedText(speedRatio),
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: _getSpeedColor(speedRatio),
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-          
-          SizedBox(height: 12),
-          
-          // Barra de velocidad
-          Stack(
-            children: [
-              Container(
-                height: 8,
-                decoration: BoxDecoration(
-                  color: Colors.grey[200],
-                  borderRadius: BorderRadius.circular(4),
-                ),
-              ),
-              FractionallySizedBox(
-                widthFactor: speedRatio.clamp(0.0, 1.0),
-                child: Container(
-                  height: 8,
-                  decoration: BoxDecoration(
-                    color: _getSpeedColor(speedRatio),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          
-          SizedBox(height: 8),
-          
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                '0W',
-                style: Theme.of(context).textTheme.caption,
-              ),
-              Text(
-                '${maxPower.toInt()}W',
-                style: Theme.of(context).textTheme.caption,
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-  
-  String _getSpeedText(double ratio) {
-    if (ratio > 0.8) return 'Muy rápida';
-    if (ratio > 0.6) return 'Rápida';
-    if (ratio > 0.4) return 'Normal';
-    if (ratio > 0.2) return 'Lenta';
-    return 'Muy lenta';
-  }
-  
-  Color _getSpeedColor(double ratio) {
-    if (ratio > 0.8) return Colors.green;
-    if (ratio > 0.6) return Colors.blue;
-    if (ratio > 0.4) return Colors.orange;
-    if (ratio > 0.2) return Colors.orange[300]!;
-    return Colors.red;
   }
 }

@@ -81,11 +81,11 @@ class AppTheme {
       ),
       
       // Card Theme
-      cardTheme: CardTheme(
+      cardTheme: const CardThemeData(
         color: surfaceColor,
         elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.all(Radius.circular(16)),
         ),
       ),
       
@@ -122,11 +122,9 @@ class AppTheme {
         primary: primaryBlue,
         secondary: secondaryGreen,
         surface: surfaceColor,
-        background: backgroundColor,
         onPrimary: Colors.white,
         onSecondary: Colors.white,
         onSurface: textPrimary,
-        onBackground: textPrimary,
       ),
     );
   }

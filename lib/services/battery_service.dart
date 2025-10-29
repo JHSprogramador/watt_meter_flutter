@@ -242,7 +242,7 @@ class BatteryService {
   String getChargingTrend() {
     if (_batteryHistory.length < 5) return 'Insuficientes datos';
     
-    final recent = _batteryHistory.takeLast(5).toList();
+    final recent = _batteryHistory.skip(_batteryHistory.length - 5).toList();
     final levelDiff = recent.last.batteryLevel - recent.first.batteryLevel;
     
     if (levelDiff > 2) return 'Carga rápida';
@@ -254,7 +254,7 @@ class BatteryService {
   Duration? estimateTimeToFull() {
     if (!_isCharging || _batteryHistory.length < 10) return null;
     
-    final recent = _batteryHistory.takeLast(10).toList();
+    final recent = _batteryHistory.skip(_batteryHistory.length - 10).toList();
     final timeSpan = recent.last.timestamp.difference(recent.first.timestamp);
     final levelChange = recent.last.batteryLevel - recent.first.batteryLevel;
     
