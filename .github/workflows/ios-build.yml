@@ -1,0 +1,61 @@
+name: iOS Build and Deploy
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-ios:
+    runs-on: macos-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.16.0'
+        channel: 'stable'
+    
+    - name: Install dependencies
+      run: flutter pub get
+      
+    - name: Analyze code
+      run: flutter analyze
+      
+    - name: Run tests
+      run: flutter test
+      
+    - name: Build iOS (no signing)
+      run: |
+        cd ios
+        pod install
+        cd ..
+        flutter build ios --release --no-codesign
+        
+    - name: Create IPA
+      run: |
+        mkdir -p build/ios/ipa
+        cp -r build/ios/iphoneos/Runner.app build/ios/ipa/Payload.app
+        cd build/ios/ipa
+        zip -r ../../../WattMeter.ipa Payload.app
+        
+    - name: Upload IPA artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: WattMeter-iOS
+        path: WattMeter.ipa
+        
+    # Opcional: Subir a TestFlight (requiere secretos configurados)
+    - name: Deploy to TestFlight
+      if: github.ref == 'refs/heads/main'
+      env:
+        APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+        APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+        APP_STORE_CONNECT_API_PRIVATE_KEY: ${{ secrets.APP_STORE_CONNECT_API_PRIVATE_KEY }}
+      run: |
+        # Aquí iría la configuración para subir a TestFlight
+        echo "Configurar TestFlight upload aquí"

@@ -1,0 +1,56 @@
+name: watt_meter_flutter
+description: Monitor de carga nativo para iPhone 13 desarrollado en Flutter desde Windows
+
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  
+  # Acceso a APIs nativas de batería
+  battery_plus: ^4.0.2
+  
+  # Permisos del sistema
+  permission_handler: ^11.0.1
+  
+  # Iconos de Cupertino (iOS style)
+  cupertino_icons: ^1.0.2
+  
+  # HTTP para comunicación (futuras versiones)
+  http: ^1.1.0
+  
+  # Almacenamiento local
+  shared_preferences: ^2.2.2
+  
+  # Gráficos y charts
+  fl_chart: ^0.64.0
+  
+  # Animaciones avanzadas
+  lottie: ^2.7.0
+  
+  # Device info
+  device_info_plus: ^9.1.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
+  
+  assets:
+    - assets/images/
+    - assets/animations/
+  
+  fonts:
+    - family: SF Pro Display
+      fonts:
+        - asset: assets/fonts/SFProDisplay-Regular.ttf
+        - asset: assets/fonts/SFProDisplay-Bold.ttf
+          weight: 700
